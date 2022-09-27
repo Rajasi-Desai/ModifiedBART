@@ -25,19 +25,14 @@ from psychopy import core, data, event, gui, sound, visual
 # window and stimulus sizes
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
-POP_TEXTURE_SIZE = (200, 155)
 BALL_TEXTURE_SIZE = (596, 720)
-INITIAL_BALL_SIZE = (
-    int(BALL_TEXTURE_SIZE[0] * 0.2), int(BALL_TEXTURE_SIZE[1] * 0.2))
-# ball size increases starting at 20% of screen hight until 100% for condition with maximal 128 pumps
+CARD_COUNTER = 0
 
-#----------------------------------------------------
-SHAPE_LIST = ["square", "triangle", "circle"]
-
-#-------------------------------------------------------
 
 # task configuration
-COLOR_LIST = ['yellow', 'orange', 'blue']  #CHANGE TO SYMBOLS
+SHAPE_LIST = ["square", "triangle", "circle"]
+IMAGE_LIST = ["squareCard.png", "triangleCard.png", "circleCard.png"]
+BAD_CARD = "badCard.png"
 MAX_PUMPS = [8, 32, 128]  # three risk types
 REPETITIONS = 30  # repetitions of risk
 REWARD = 0.05
@@ -48,7 +43,7 @@ KEY_NEXT = 'return'
 KEY_QUIT = 'escape'
 
 # messages
-ABSENT_MESSAGE = 'You\'ve waited to long! The balloon has shrunk. Your temporary earnings are lost.'
+ABSENT_MESSAGE = 'You\'ve waited to long! Your temporary earnings are lost.'
 FINAL_MESSAGE = 'Well done! You banked a total of {:.2f} €. Thank you for your participation.'
 
 
@@ -65,7 +60,7 @@ win = visual.Window(
 stim = visual.ImageStim(
     win,
     pos=(0, 0),
-    size=INITIAL_BALL_SIZE,
+    #size=INITIAL_BALL_SIZE,
     units='pix',
     interpolate=True
 )
@@ -118,36 +113,6 @@ def showInfoBox():
         fixed=['version'],
         order=['id', 'age', 'gender', 'date', 'version']
     )
-
-"""
-def createTrialHandlerColor(colorList, maxPumps, REPETITIONS, REWARD):
-    Creates a TrialHandler based on colors of balloon and pop stimuli, repetitions of trials and reward value for
-    each successful pump. CAVE: color_list and maxPumps must be lists of equal length.
-    # to import balloon and pop images of different colors
-    balloonImg = []
-    popImg = []
-    for color in colorList:
-        balloonImg.append(color + 'Balloon.png')
-        popImg.append(color + 'Pop.png')
-    # create trial list of dictionaries
-    trialList = []
-    for index in range(len(colorList)):
-        trialDef = {
-            'balloon_img': balloonImg[index],
-            'pop_img': popImg[index],
-            'maxPumps': maxPumps[index],
-            'reward': REWARD
-        }
-        trialList.append(trialDef)
-    # same order for all subjects
-    random.seed(52472)
-    trials = data.TrialHandler(
-        trialList,
-        nReps=REPETITIONS,
-        method='fullRandom'
-    )
-    return trials
-"""
 
 def createTrialHandler(shapeList, maxPumps, REPETITIONS, REWARD):
     """Creates a TrialHandler based on colors of balloon and pop stimuli, repetitions of trials and reward value for
@@ -203,10 +168,10 @@ def drawText(TextStim, pos, txt, alignment='right'):
     TextStim.draw()
 
 
-def showImg(img, size, wait=1):
+def showImg(img, wait=1):
     """Shows an image of spezified size."""
     stim.setImage(img)
-    stim.size = size
+    #stim.size = size
     stim.draw()
     win.flip()
     core.wait(wait)
@@ -220,10 +185,10 @@ def saveData(dataList, file="data.txt"):
         outputFile.write(output.format(dataList))
 
 
-def drawTrial(ballSize, ballImage, lastMoney, totalMoney):
+def drawTrial(counter, image, lastMoney, totalMoney):
     """Shows trial setup, i.e. reminders, stimulus, and account balance."""
-    stim.size = ballSize
-    stim.setImage(ballImage)
+    #stim.size = ballSize
+    stim.setImage(image)
     stim.draw()
     drawText(remind_return, (-0.23, -0.9),
              'Press RETURN\nto cash earnings', 'right')
@@ -254,19 +219,20 @@ def bart(info):
         nPumps = 0
         continuePumping = True
         increase = 0
-        ballSize = INITIAL_BALL_SIZE
-        stim.size = ballSize
+        #ballSize = INITIAL_BALL_SIZE
+        #stim.size = ballSize
 
         # pump balloon
         while continuePumping and not pop:
 
             # increases ball size with each pump
-            ballSize = (
-                INITIAL_BALL_SIZE[0] + BALL_TEXTURE_SIZE[0] * increase,
-                INITIAL_BALL_SIZE[1] + BALL_TEXTURE_SIZE[1] * increase
-            )
+            #ballSize = (
+            #    INITIAL_BALL_SIZE[0] + BALL_TEXTURE_SIZE[0] * increase,
+             #   INITIAL_BALL_SIZE[1] + BALL_TEXTURE_SIZE[1] * increase)
 
-            drawTrial(ballSize, trial["shapeCard"], lastTempBank, permBank)
+            counter = (CARD_COUNTER + 1) 
+
+            drawTrial(counter, trial["shapeCard"], lastTempBank, permBank)
 
             # process response
             respond = event.waitKeys(
@@ -309,6 +275,7 @@ def bart(info):
                     #showImg(trial['pop_img'], POP_TEXTURE_SIZE)
 
                     #SHOW THE "BAD" CARD
+                    showImg(BAD_CARD)
                     lastTempBank = 0
                     pop = True
                 else:
