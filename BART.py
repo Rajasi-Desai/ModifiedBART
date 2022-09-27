@@ -31,6 +31,11 @@ INITIAL_BALL_SIZE = (
     int(BALL_TEXTURE_SIZE[0] * 0.2), int(BALL_TEXTURE_SIZE[1] * 0.2))
 # ball size increases starting at 20% of screen hight until 100% for condition with maximal 128 pumps
 
+#----------------------------------------------------
+SHAPE_LIST = ["square", "triangle", "circle"]
+
+#-------------------------------------------------------
+
 # task configuration
 COLOR_LIST = ['yellow', 'orange', 'blue']  #CHANGE TO SYMBOLS
 MAX_PUMPS = [8, 32, 128]  # three risk types
@@ -115,7 +120,7 @@ def showInfoBox():
     )
 
 
-def createTrialHandler(colorList, maxPumps, REPETITIONS, REWARD):
+def createTrialHandlerColor(colorList, maxPumps, REPETITIONS, REWARD):
     """Creates a TrialHandler based on colors of balloon and pop stimuli, repetitions of trials and reward value for
     each successful pump. CAVE: color_list and maxPumps must be lists of equal length."""
     # to import balloon and pop images of different colors
@@ -130,6 +135,33 @@ def createTrialHandler(colorList, maxPumps, REPETITIONS, REWARD):
         trialDef = {
             'balloon_img': balloonImg[index],
             'pop_img': popImg[index],
+            'maxPumps': maxPumps[index],
+            'reward': REWARD
+        }
+        trialList.append(trialDef)
+    # same order for all subjects
+    random.seed(52472)
+    trials = data.TrialHandler(
+        trialList,
+        nReps=REPETITIONS,
+        method='fullRandom'
+    )
+    return trials
+
+
+def createTrialHandler(shapeList, maxPumps, REPETITIONS, REWARD):
+    """Creates a TrialHandler based on colors of balloon and pop stimuli, repetitions of trials and reward value for
+    each successful pump. CAVE: color_list and maxPumps must be lists of equal length."""
+    # to import balloon and pop images of different colors
+    shapeCards = []
+    for shape in shapeList:
+        shapeCards.append(shape + 'Card.png')
+        #popImg.append(color + 'Pop.png')
+    # create trial list of dictionaries
+    trialList = []
+    for index in range(len(shapeList)):
+        trialDef = {
+            'shapeCard': shapeCards[index],
             'maxPumps': maxPumps[index],
             'reward': REWARD
         }
@@ -180,6 +212,7 @@ def showImg(img, size, wait=1):
     core.wait(wait)
 
 
+#CHANGE TO CSV
 def saveData(dataList, file="data.txt"):
     """"Saves all relevant data in txt file."""
     output = '\t'.join(map(str, dataList)) + '\n'
@@ -233,7 +266,7 @@ def bart(info):
                 INITIAL_BALL_SIZE[1] + BALL_TEXTURE_SIZE[1] * increase
             )
 
-            drawTrial(ballSize, trial['balloon_img'], lastTempBank, permBank)
+            drawTrial(ballSize, trial["shapeCard"], lastTempBank, permBank)
 
             # process response
             respond = event.waitKeys(
@@ -256,8 +289,6 @@ def bart(info):
             # cash out key pressed
             elif respond[0] == KEY_NEXT:
                 lastTempBank = tempBank
-                #slot_machine.stop()
-                #slot_machine.play()
 
                 # aninmation: count up to new balance
                 newBalance = permBank + tempBank
@@ -275,9 +306,9 @@ def bart(info):
 
                 # determine whether balloon pops or not
                 if random.random() < 1.0 / (trial['maxPumps'] - nPumps):
-                    #pop_sound.stop()
-                    #pop_sound.play()
-                    showImg(trial['pop_img'], POP_TEXTURE_SIZE)
+                    #showImg(trial['pop_img'], POP_TEXTURE_SIZE)
+                    
+                    #SHOW THE "BAD" CARD
                     lastTempBank = 0
                     pop = True
                 else:
@@ -285,6 +316,7 @@ def bart(info):
                     # increase balloon size to fill up other 80%
                     increase += 0.8 / max(MAX_PUMPS)
 
+            #CHANGE TO CSV FILE
             # save list of data in txt file
             dataList = [info['id'], trialNumber,
                         trial['maxPumps'], nPumps, pop, '{:.2f}'.format(permBank)]
