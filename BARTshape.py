@@ -44,7 +44,7 @@ KEY_QUIT = 'escape'
 
 # messages
 ABSENT_MESSAGE = 'You\'ve waited to long! Your temporary earnings are lost.'
-FINAL_MESSAGE = 'Well done! You banked a total of {:.2f} €. Thank you for your participation.'
+FINAL_MESSAGE = 'Well done! You banked a total of {:.2f}. Thank you for your participation.'
 
 
 # global objects
@@ -185,19 +185,19 @@ def saveData(dataList, file="data.txt"):
         outputFile.write(output.format(dataList))
 
 
-def drawTrial(counter, image, lastMoney, totalMoney):
+def drawTrial(image, lastMoney, totalMoney):
     """Shows trial setup, i.e. reminders, stimulus, and account balance."""
     #stim.size = ballSize
     stim.setImage(image)
     stim.draw()
     drawText(remind_return, (-0.23, -0.9),
-             'Press RETURN\nto cash earnings', 'right')
+             'Press ENTER\nto cash earnings', 'right')
     drawText(remind_enter, (0.23, -0.9),
-             'Press ENTER\nto pump', 'left')
+             'Press SPACE\nto pump', 'left')
     drawText(text, (0.4, -0.6),
-             'Last Balloon: \n{:.2f} €'.format(lastMoney))
+             'Last card deck: \n{:.2f}'.format(lastMoney))
     drawText(text, (0.4, -0.9),
-             'Total Earned: \n{:.2f} €'.format(round(totalMoney, 2)))
+             'Total Earned: \n{:.2f}'.format(round(totalMoney, 2)))
     win.flip()
 
 
@@ -225,14 +225,9 @@ def bart(info):
         # pump balloon
         while continuePumping and not pop:
 
-            # increases ball size with each pump
-            #ballSize = (
-            #    INITIAL_BALL_SIZE[0] + BALL_TEXTURE_SIZE[0] * increase,
-             #   INITIAL_BALL_SIZE[1] + BALL_TEXTURE_SIZE[1] * increase)
+            counter = random.randint(0,2) 
 
-            counter = (CARD_COUNTER + 1) 
-
-            drawTrial(counter, trial["shapeCard"], lastTempBank, permBank)
+            drawTrial(IMAGE_LIST[counter], lastTempBank, permBank)
 
             # process response
             respond = event.waitKeys(
@@ -261,7 +256,7 @@ def bart(info):
                 while round(permBank, 2) < round(newBalance, 2):
                     permBank += 0.01
                     drawText(text, (0.4, -0.9),
-                             'Total Earned:\n{:.2f} €'.format(permBank))
+                             'Total Earned:\n{:.2f}'.format(permBank))
                     win.flip()
                 permBank = newBalance
                 continuePumping = False
