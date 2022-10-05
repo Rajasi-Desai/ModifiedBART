@@ -20,6 +20,7 @@
 
 import random
 from psychopy import core, data, event, gui, sound, visual
+import datetime
 
 
 # window and stimulus sizes
@@ -35,7 +36,7 @@ IMAGE_LIST = ["squareCard.png", "triangleCard.png", "circleCard.png"]
 BAD_CARD = "badCard.png"
 MAX_PUMPS = [8, 32, 128]  # three risk types
 REPETITIONS = 30  # repetitions of risk
-REWARD = 0.05
+REWARD = 1
 
 # keys
 KEY_PUMP = 'space'
@@ -44,7 +45,7 @@ KEY_QUIT = 'escape'
 
 # messages
 ABSENT_MESSAGE = 'You\'ve waited to long! Your temporary earnings are lost.'
-FINAL_MESSAGE = 'Well done! You banked a total of {:.2f}. Thank you for your participation.'
+FINAL_MESSAGE = 'Well done! You banked a total of {:d}. Thank you for your participation.'
 
 
 # global objects
@@ -54,13 +55,12 @@ win = visual.Window(
     size=(WIN_WIDTH, WIN_HEIGHT),
     units='pixels',
     color='Black',
-    fullscr=False
+    fullscr=True
 )
 # stimulus
 stim = visual.ImageStim(
     win,
     pos=(0, 0),
-    #size=INITIAL_BALL_SIZE,
     units='pix',
     interpolate=True
 )
@@ -121,7 +121,6 @@ def createTrialHandler(shapeList, maxPumps, REPETITIONS, REWARD):
     shapeCards = []
     for shape in shapeList:
         shapeCards.append(shape + 'Card.png')
-        #popImg.append(color + 'Pop.png')
     # create trial list of dictionaries
     trialList = []
     for index in range(len(shapeList)):
@@ -178,11 +177,15 @@ def showImg(img, wait=1):
 
 
 #CHANGE TO CSV
-def saveData(dataList, file="data.txt"):
+def saveData(dataList):
     """"Saves all relevant data in txt file."""
-    output = '\t'.join(map(str, dataList)) + '\n'
-    with open(file, 'a') as outputFile:
-        outputFile.write(output.format(dataList))
+    participant_id = input("Please enter your participant ID: ")
+    date_time = datetime.datetime.now()
+    output = open(str(participant_id) + " " + str(date_time) + ".csv", "w")
+    output.write(dataList)
+    #output = '\t'.join(map(str, dataList)) + '\n'
+    #with open(file, 'a') as outputFile:
+     #   outputFile.write(output.format(dataList))
 
 
 def drawTrial(image, lastMoney, totalMoney):
@@ -191,13 +194,13 @@ def drawTrial(image, lastMoney, totalMoney):
     stim.setImage(image)
     stim.draw()
     drawText(remind_return, (-0.23, -0.9),
-             'Press ENTER\nto cash earnings', 'right')
+             'Press ENTER\nto collect points', 'right')
     drawText(remind_enter, (0.23, -0.9),
-             'Press SPACE\nto pump', 'left')
+             'Press SPACE\nto get a new card', 'left')
     drawText(text, (0.4, -0.6),
-             'Last card deck: \n{:.2f}'.format(lastMoney))
+             'Last card deck: \n{:d}'.format(lastMoney))
     drawText(text, (0.4, -0.9),
-             'Total Earned: \n{:.2f}'.format(round(totalMoney, 2)))
+             'Total Earned: \n{:d}'.format(round(totalMoney, 2)))
     win.flip()
 
 
@@ -219,8 +222,6 @@ def bart(info):
         nPumps = 0
         continuePumping = True
         increase = 0
-        #ballSize = INITIAL_BALL_SIZE
-        #stim.size = ballSize
 
         # pump balloon
         while continuePumping and not pop:
