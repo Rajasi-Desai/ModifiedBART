@@ -39,6 +39,7 @@ BAD_CARD_IMAGE = "images/lose_all.png"
 MAX_PUMPS = [8, 32, 128]  # three risk types
 REPETITIONS = 30  # repetitions of risk
 REWARD = 1
+FAILED_COUNTER = 0
 
 # keys
 KEY_PUMP = 'space'
@@ -177,10 +178,18 @@ def showCard(img, wait=1):
 
 
 #CHANGE TO CSV
-def saveData(dataList):
-    """"Saves all relevant data in txt file."""
-    #changes to experiment handler
-    #NOT IMPLEMENTED YET
+def saveData(file_path):
+    """"Saves all relevant data in csv file."""
+    if file_path is None:
+        participant_id = input("Please enter your participant ID: ")
+        date_time = datetime.datetime.now()
+        output = open("data/" + str(participant_id) +
+                      " " + str(date_time) + ".csv", "w")
+    else:
+        output = open(file_path, "w")
+    output.write("permbank,failedCounts\n")
+    permbank = 0
+    failedCounts = 0
 
 
 def drawTrial(image, lastMoney, totalMoney):
@@ -275,6 +284,7 @@ def bart():
                     showCard(BAD_CARD_IMAGE)
                     lastTempBank = 0
                     pop = True
+                    FAILED_COUNTER += 1
                 else:
                     tempBank += REWARD
                     # increase balloon size to fill up other 80%
