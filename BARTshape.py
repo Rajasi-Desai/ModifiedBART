@@ -19,7 +19,7 @@
 
 
 import random
-from psychopy import core, data, event, gui, sound, visual
+from psychopy import core, data, event, gui, visual
 import datetime
 
 
@@ -29,11 +29,13 @@ WIN_HEIGHT = 720
 BALL_TEXTURE_SIZE = (596, 720)
 CARD_COUNTER = 0
 
-
 # task configuration
-SHAPE_LIST = ["square", "triangle", "circle"]
-IMAGE_LIST = ["squareCard.png", "triangleCard.png", "circleCard.png"]
-BAD_CARD = "badCard.png"
+#SHAPE_LIST = ["square", "triangle", "circle"]
+SHAPE_IMAGE_LIST = []
+for i in range(13):
+    letter = chr(i+97)
+    SHAPE_IMAGE_LIST.append("images/point_" + letter + ".png")
+BAD_CARD_IMAGE = "images/lose_all.png"
 MAX_PUMPS = [8, 32, 128]  # three risk types
 REPETITIONS = 30  # repetitions of risk
 REWARD = 1
@@ -54,9 +56,28 @@ FINAL_MESSAGE = 'Well done! You banked a total of {:d}. Thank you for your parti
 win = visual.Window(
     size=(WIN_WIDTH, WIN_HEIGHT),
     units='pixels',
-    color='Black',
-    fullscr=True
+    #color='Black',
+    fullscr=False
 )
+
+card_base = visual.Rect(
+    win=win, name='polygon',
+    width=(0.4, 0.5)[0], height=(0.4, 0.5)[1],
+    ori=0.0, pos=(0, 0),
+    lineWidth=1.0,     colorSpace='rgb',  lineColor='white', fillColor='white',
+    opacity=None, depth=0.0, interpolate=True
+)
+
+shape_image = visual.ImageStim(
+    win=win,
+    name='image', 
+    mask=None,
+    ori=0.0, pos=(0, 0), size=(0.5, 0.5),
+    color=[1,1,1], colorSpace='rgb', opacity=None,
+    flipHoriz=False, flipVert=False,
+    texRes=128.0, interpolate=True, depth=-1.0
+)
+
 # stimulus
 stim = visual.ImageStim(
     win,
@@ -96,24 +117,6 @@ remind_enter = visual.TextStim(
     anchorVert='bottom'
 )
 
-#see where it is saved
-#save it in csv
-def showInfoBox():
-    """Set up dialog box for subject information."""
-    info = {
-        'id': '0',
-        'age': '0',
-        'version': 0.1,
-        'gender': ['female', 'male', 'other'],
-        'date': data.getDateStr(format="%Y-%m-%d_%H:%M")
-    }
-    return gui.DlgFromDict(
-        title='BART',
-        dictionary=info,
-        fixed=['version'],
-        order=['id', 'age', 'gender', 'date', 'version']
-    )
-
 def createTrialHandler(shapeList, maxPumps, REPETITIONS, REWARD):
     """Creates a TrialHandler based on colors of balloon and pop stimuli, repetitions of trials and reward value for
     each successful pump. CAVE: color_list and maxPumps must be lists of equal length."""
@@ -139,7 +142,7 @@ def createTrialHandler(shapeList, maxPumps, REPETITIONS, REWARD):
     )
     return trials
 
-
+#change it either to direct text or tell Ramiro to make an image applicable to this experiment
 def showInstruction(img, wait=30):
     """Show an instruction and wait for a response"""
     instruction = visual.ImageStim(
@@ -167,25 +170,20 @@ def drawText(TextStim, pos, txt, alignment='right'):
     TextStim.draw()
 
 
-def showImg(img, wait=1):
-    """Shows an image of spezified size."""
+def showCard(img, wait=1):
     stim.setImage(img)
-    #stim.size = size
+    card_base.draw()
     stim.draw()
     win.flip()
     core.wait(wait)
 
 
+
 #CHANGE TO CSV
 def saveData(dataList):
     """"Saves all relevant data in txt file."""
-    participant_id = input("Please enter your participant ID: ")
-    date_time = datetime.datetime.now()
-    output = open(str(participant_id) + " " + str(date_time) + ".csv", "w")
-    output.write(dataList)
-    #output = '\t'.join(map(str, dataList)) + '\n'
-    #with open(file, 'a') as outputFile:
-     #   outputFile.write(output.format(dataList))
+    #changes to experiment handler
+    #NOT IMPLEMENTED YET
 
 
 def drawTrial(image, lastMoney, totalMoney):
