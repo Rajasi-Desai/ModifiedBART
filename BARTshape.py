@@ -121,15 +121,12 @@ def createTrialHandler(shapeList, maxPumps, REPETITIONS, REWARD):
     """Creates a TrialHandler based on colors of balloon and pop stimuli, repetitions of trials and reward value for
     each successful pump. CAVE: color_list and maxPumps must be lists of equal length."""
     # to import balloon and pop images of different colors
-    shapeCards = []
-    for shape in shapeList:
-        shapeCards.append(shape + 'Card.png')
     # create trial list of dictionaries
     trialList = []
     for index in range(len(shapeList)):
         trialDef = {
-            'shapeCard': shapeCards[index],
-            'maxPumps': maxPumps[index],
+            'shapeCard': shapeList[index],
+            'maxPumps': maxPumps[index%3],
             'reward': REWARD
         }
         trialList.append(trialDef)
@@ -172,7 +169,7 @@ def drawText(TextStim, pos, txt, alignment='right'):
 
 def showCard(img, wait=1):
     stim.setImage(img)
-    card_base.draw()
+    card_base.setAutoDraw(True)
     stim.draw()
     win.flip()
     core.wait(wait)
@@ -190,7 +187,9 @@ def drawTrial(image, lastMoney, totalMoney):
     """Shows trial setup, i.e. reminders, stimulus, and account balance."""
     #stim.size = ballSize
     stim.setImage(image)
+    card_base.setAutoDraw(True)
     stim.draw()
+    #showCard(image)
     drawText(remind_return, (-0.23, -0.9),
              'Press ENTER\nto collect points', 'right')
     drawText(remind_enter, (0.23, -0.9),
@@ -200,14 +199,15 @@ def drawTrial(image, lastMoney, totalMoney):
     drawText(text, (0.4, -0.9),
              'Total Earned: \n{:d}'.format(round(totalMoney, 2)))
     win.flip()
+    card_base.setAutoDraw(False)
 
 
-def bart(info):
+def bart():
     """Execute experiment"""
-    trials = createTrialHandler(SHAPE_LIST, MAX_PUMPS, REPETITIONS, REWARD)
+    trials = createTrialHandler(SHAPE_IMAGE_LIST, MAX_PUMPS, REPETITIONS, REWARD)
 
-    if showInstruction('instructions.png') == KEY_QUIT:
-        return
+    #if showInstruction('instructions.png') == KEY_QUIT:
+     #   return
 
     permBank = 0
     lastTempBank = 0
@@ -226,7 +226,7 @@ def bart(info):
 
             counter = random.randint(0,2) 
 
-            drawTrial(IMAGE_LIST[counter], lastTempBank, permBank)
+            drawTrial(SHAPE_IMAGE_LIST[counter], lastTempBank, permBank)
 
             # process response
             respond = event.waitKeys(
@@ -251,13 +251,15 @@ def bart(info):
                 lastTempBank = tempBank
 
                 # aninmation: count up to new balance
-                newBalance = permBank + tempBank
-                while round(permBank, 2) < round(newBalance, 2):
-                    permBank += 0.01
-                    drawText(text, (0.4, -0.9),
-                             'Total Earned:\n{:.2f}'.format(permBank))
-                    win.flip()
-                permBank = newBalance
+                #newBalance = permBank + tempBank
+                #while round(permBank, 2) < round(newBalance, 2):
+                 #   permBank += 0.01
+                    #drawText(text, (0.4, -0.9),
+                  #           'Total Earned:\n{:.2f}'.format(permBank))
+                   # win.flip()
+                permBank += tempBank
+                drawText(text, (0.4, -0.9),
+                             'Total Earned:\n{:d}'.format(permBank))
                 continuePumping = False
 
             # pump key pressed
@@ -269,21 +271,14 @@ def bart(info):
                     #showImg(trial['pop_img'], POP_TEXTURE_SIZE)
 
                     #SHOW THE "BAD" CARD
-                    showImg(BAD_CARD)
+                    #showImg(BAD_CARD)
+                    showCard(BAD_CARD_IMAGE)
                     lastTempBank = 0
                     pop = True
                 else:
                     tempBank += REWARD
                     # increase balloon size to fill up other 80%
                     increase += 0.8 / max(MAX_PUMPS)
-
-            #CHANGE TO CSV FILE
-            # save list of data in txt file
-            dataList = [info['id'], trialNumber,
-                        trial['maxPumps'], nPumps, pop, '{:.2f}'.format(permBank)]
-            saveData(dataList, 'data.txt')
-    subjectList = [info['id'], info['age'], info['gender'], info['date']]
-    saveData(subjectList, 'subjects.txt')
 
     # final information about reward
     drawText(text, (0, 0),
@@ -295,12 +290,13 @@ def bart(info):
 
 def main():
     # dialog for subject information
-    infoDlg = showInfoBox()
-    info = infoDlg.dictionary
-    if infoDlg.OK:
+    #infoDlg = showInfoBox()
+    #info = infoDlg.dictionary
+    #if infoDlg.OK:
         # start experiment
-        bart(info)
+     #   bart(info)
 
+    bart()
     # quit experiment
     win.close()
     core.quit()
