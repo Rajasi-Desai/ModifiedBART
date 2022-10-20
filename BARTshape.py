@@ -18,6 +18,7 @@
 # source: http://www.impulsivity.org/measurement/BART
 
 
+from doctest import FAIL_FAST
 import random
 from psychopy import core, data, event, gui, visual
 import datetime
@@ -27,10 +28,10 @@ import datetime
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
 BALL_TEXTURE_SIZE = (596, 720)
-CARD_COUNTER = 0
+#CARD_COUNTER = 0
+#FAILED_COUNTER = 0
 
 # task configuration
-#SHAPE_LIST = ["square", "triangle", "circle"]
 SHAPE_IMAGE_LIST = []
 for i in range(13):
     letter = chr(i+97)
@@ -39,7 +40,7 @@ BAD_CARD_IMAGE = "images/lose_all.png"
 MAX_PUMPS = [8, 32, 128]  # three risk types
 REPETITIONS = 30  # repetitions of risk
 REWARD = 1
-FAILED_COUNTER = 0
+
 
 # keys
 KEY_PUMP = 'space'
@@ -57,16 +58,16 @@ FINAL_MESSAGE = 'Well done! You banked a total of {:d}. Thank you for your parti
 win = visual.Window(
     size=(WIN_WIDTH, WIN_HEIGHT),
     units='pixels',
-    #color='Black',
-    fullscr=False
+    fullscr=True
 )
 
 card_base = visual.Rect(
-    win=win, name='polygon',
-    width=(0.4, 0.5)[0], height=(0.4, 0.5)[1],
-    ori=0.0, pos=(0, 0),
-    lineWidth=1.0,     colorSpace='rgb',  lineColor='white', fillColor='white',
-    opacity=None, depth=0.0, interpolate=True
+    win=win,
+    units="pix",
+    width=250,
+    height=300,
+    fillColor=[1, 1, 1],
+    lineColor=[1, 1, 1]
 )
 
 shape_image = visual.ImageStim(
@@ -170,12 +171,10 @@ def drawText(TextStim, pos, txt, alignment='right'):
 
 def showCard(img, wait=1):
     stim.setImage(img)
-    card_base.setAutoDraw(True)
+    card_base.draw()
     stim.draw()
     win.flip()
     core.wait(wait)
-
-
 
 #CHANGE TO CSV
 def saveData(file_path):
@@ -194,11 +193,9 @@ def saveData(file_path):
 
 def drawTrial(image, lastMoney, totalMoney):
     """Shows trial setup, i.e. reminders, stimulus, and account balance."""
-    #stim.size = ballSize
     stim.setImage(image)
-    card_base.setAutoDraw(True)
+    card_base.draw()
     stim.draw()
-    #showCard(image)
     drawText(remind_return, (-0.23, -0.9),
              'Press ENTER\nto collect points', 'right')
     drawText(remind_enter, (0.23, -0.9),
@@ -220,6 +217,7 @@ def bart():
 
     permBank = 0
     lastTempBank = 0
+    failed_counter = 0 
     # iterate thorugh balloons
     for trialNumber, trial in enumerate(trials):
 
@@ -259,13 +257,10 @@ def bart():
             elif respond[0] == KEY_NEXT:
                 lastTempBank = tempBank
 
-                # aninmation: count up to new balance
-                #newBalance = permBank + tempBank
-                #while round(permBank, 2) < round(newBalance, 2):
-                 #   permBank += 0.01
-                    #drawText(text, (0.4, -0.9),
-                  #           'Total Earned:\n{:.2f}'.format(permBank))
-                   # win.flip()
+                drawText(text, (0,0), "Next Round", 'center')
+                win.flip()
+                core.wait(1)
+
                 permBank += tempBank
                 drawText(text, (0.4, -0.9),
                              'Total Earned:\n{:d}'.format(permBank))
@@ -277,14 +272,14 @@ def bart():
 
                 # determine whether balloon pops or not
                 if random.random() < 1.0 / (trial['maxPumps'] - nPumps):
-                    #showImg(trial['pop_img'], POP_TEXTURE_SIZE)
-
-                    #SHOW THE "BAD" CARD
-                    #showImg(BAD_CARD)
                     showCard(BAD_CARD_IMAGE)
                     lastTempBank = 0
                     pop = True
-                    FAILED_COUNTER += 1
+                    #FAILED_COUNTER = FAILED_COUNTER + 1
+                    failed_counter += 1
+                    drawText(text, (0,0), "Next Round", 'center')
+                    win.flip()
+                    core.wait(1)
                 else:
                     tempBank += REWARD
                     # increase balloon size to fill up other 80%
