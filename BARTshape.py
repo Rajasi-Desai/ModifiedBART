@@ -18,7 +18,6 @@
 # source: http://www.impulsivity.org/measurement/BART
 
 
-from doctest import FAIL_FAST
 import random
 from psychopy import core, data, event, gui, visual
 import datetime
@@ -27,18 +26,19 @@ import datetime
 # window and stimulus sizes
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
-BALL_TEXTURE_SIZE = (596, 720)
+#BALL_TEXTURE_SIZE = (596, 720)
 #CARD_COUNTER = 0
 #FAILED_COUNTER = 0
 
 # task configuration
 SHAPE_IMAGE_LIST = []
+#to add image files to an array
 for i in range(13):
     letter = chr(i+97)
     SHAPE_IMAGE_LIST.append("images/point_" + letter + ".png")
 BAD_CARD_IMAGE = "images/lose_all.png"
 MAX_PUMPS = [8, 32, 128]  # three risk types
-REPETITIONS = 30  # repetitions of risk
+REPETITIONS = 1  # repetitions of risk
 REWARD = 1
 
 
@@ -48,8 +48,9 @@ KEY_NEXT = 'return'
 KEY_QUIT = 'escape'
 
 # messages
-ABSENT_MESSAGE = 'You\'ve waited to long! Your temporary earnings are lost.'
+ABSENT_MESSAGE = 'You\'ve waited to long! Your points for this round are lost.'
 FINAL_MESSAGE = 'Well done! You banked a total of {:d}. Thank you for your participation.'
+BAD_CARD_MESSAGE = 'Oh no! A bad card came up. You have lost your points for this round'
 
 
 # global objects
@@ -120,18 +121,19 @@ remind_enter = visual.TextStim(
 )
 
 def createTrialHandler(shapeList, maxPumps, REPETITIONS, REWARD):
-    """Creates a TrialHandler based on colors of balloon and pop stimuli, repetitions of trials and reward value for
-    each successful pump. CAVE: color_list and maxPumps must be lists of equal length."""
+    """Creates a TrialHandler based on the shape cards and the bad card, repetitions of trials and reward value for
+    each successful pump."""
     # to import balloon and pop images of different colors
     # create trial list of dictionaries
     trialList = []
     for index in range(len(shapeList)):
         trialDef = {
             'shapeCard': shapeList[index],
-            'maxPumps': maxPumps[index%3],
+            'maxPumps': maxPumps[index%len(maxPumps)],
             'reward': REWARD
         }
         trialList.append(trialDef)
+
     # same order for all subjects
     random.seed(52472)
     trials = data.TrialHandler(
@@ -186,7 +188,9 @@ def saveData(file_path):
                       " " + str(date_time) + ".csv", "w")
     else:
         output = open(file_path, "w")
-    output.write("permbank,failedCounts\n")
+    output.write("permbank,failedCount,totalpoints\n")
+
+    #psydata.saveAsWideText(save_path, delim=',')
     permbank = 0
     failedCounts = 0
 
@@ -257,7 +261,9 @@ def bart():
             elif respond[0] == KEY_NEXT:
                 lastTempBank = tempBank
 
-                drawText(text, (0,0), "Next Round", 'center')
+                tempEarningstxt = 'You earned {:d} points for this round.'.format(lastTempBank)
+
+                drawText(text, (0,0), tempEarningstxt, 'center')
                 win.flip()
                 core.wait(1)
 
@@ -270,14 +276,15 @@ def bart():
             elif respond[0] == KEY_PUMP:
                 nPumps += 1
 
-                # determine whether balloon pops or not
+                # determine whether the bad card is shown or not
                 if random.random() < 1.0 / (trial['maxPumps'] - nPumps):
                     showCard(BAD_CARD_IMAGE)
                     lastTempBank = 0
                     pop = True
                     #FAILED_COUNTER = FAILED_COUNTER + 1
+                    #FAILED_COUNTER = FAILED_COUNTER + 1
                     failed_counter += 1
-                    drawText(text, (0,0), "Next Round", 'center')
+                    drawText(text, (0,0), BAD_CARD_MESSAGE, 'center')
                     win.flip()
                     core.wait(1)
                 else:
